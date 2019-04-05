@@ -1,0 +1,186 @@
+%pylab inline
+import pandas
+import seaborn
+
+### Reading data from the CSV file
+
+data = pandas.read_csv("uber_data.csv")
+data
+
+
+data["Date/Time"] = data["Date/Time"].map(pandas.to_datetime)
+data
+
+### adding day of month column to the data
+
+def get_dom(dt):
+    return dt.day
+data["dom"] = data["Date/Time"].map(get_dom)
+
+
+### adding week day and hour column to the data
+
+
+def get_weekday(dt):
+    return dt.weekday()
+data["weekday"] = data["Date/Time"].map(get_weekday)
+
+def get_hour(dt):
+    return dt.hour
+data["hour"] = data["Date/Time"].map(get_hour)
+
+
+data.tail()
+
+
+
+# Analysis
+
+
+### Analysis by Date of Month
+
+
+
+hist(data.dom,bins=30,rwidth=0.8,range=(0.5,30.5))
+xlabel("Date of the month")
+ylabel("Frequency")
+title("Frequency by date of month - uber - Apr 2014")
+
+
+
+
+
+#for k,rows in data.groupby("dom"):
+#   print(k,len(rows))
+def count_rows(rows):
+    return len(rows)
+by_date = data.groupby("dom").apply(count_rows)
+by_date
+
+
+
+
+
+#more useful method then 43 rd way of making plot 
+bar(range(1,31),by_date)
+
+
+
+
+
+by_date_sorted = by_date.sort_values()
+by_date_sorted
+
+
+
+
+
+
+bar(range(1,31),by_date_sorted)
+xticks(range(1,31),by_date_sorted.index)
+xlabel("Date of the month")
+ylabel("Frequency")
+title("Frequency by date of month - uber - Apr 2014");
+
+
+
+
+
+### Analysis By Hour
+
+
+
+hist(data.hour,bins=24,rwidth=0.8,range=(0.5,24))
+xlabel("Hour of the day")
+ylabel("Frequency")
+title("Frequency by Hour - uber - Apr 2014")
+
+
+
+
+def count_rows(rows):
+    return len(rows)
+by_hour = data.groupby("hour").apply(count_rows)
+by_hour
+
+
+
+
+### Analysis By Weekday
+
+
+
+
+
+hist(data.weekday,bins=7,range=(-0.5,6.5),rwidth=0.8,color="#AA6666" , alpha = 0.4)
+xticks(range(7),"Mon Tue Wed Thur Fri Sat Sun".split())
+xlabel("Day of the week")
+ylabel("Frequency")
+title("Frequency by Weekday - uber - Apr 2014")
+
+
+
+
+
+def count_rows(rows):
+    return len(rows)
+by_weekday = data.groupby("weekday").apply(count_rows)
+by_weekday
+
+
+
+
+### Cross Analysis(hour , weekday)
+
+
+
+
+
+by_cross = data.groupby("weekday hour".split()).apply(count_rows).unstack()
+
+
+
+
+
+seaborn.heatmap(by_cross)
+
+
+
+
+### By lat and lon
+
+
+
+hist(data.Lat,bins=100,rwidth=0.8,range=(40.5,41));
+
+
+
+
+
+
+hist(data.Lon,bins=100,rwidth=0.8,range=(-74.1,-73.9));
+
+
+
+
+hist(data.Lon,bins=100,rwidth=0.8,range=(-74.1,-73.9),color='g',alpha=0.5,label="Longitude");
+legend(loc = "upper right")
+twiny()
+hist(data.Lat,bins=100,rwidth=0.8,range=(40.5,41),color='r',alpha=0.5,label="Latitude");
+legend(loc="upper left")
+
+
+
+
+### amazing thing coming up map of a city made using lat and long approximate
+
+
+
+
+
+# places where uber runs
+figure(figsize =(20,20))
+plot(data["Lon"],data["Lat"],".",ms=1,alpha = 0.4)
+xlim(-74.2,-73.7)
+ylim(40.7,41)
+title("Map of manhatten")
